@@ -1,5 +1,6 @@
 use crate::ais::OpenAIClient;
 use crate::Result;
+use async_openai::types::AssistantToolsRetrieval;
 use async_openai::types::CreateAssistantRequest;
 use derive_more::{Deref, Display, From};
 
@@ -27,8 +28,9 @@ pub async fn create(open_ai_client: &OpenAIClient, config: CreateConfig) -> Resu
         .create(CreateAssistantRequest {
             model: config.model,
             name: Some(config.name),
+            tools: Some(vec![AssistantToolsRetrieval::default().into()]),
             ..Default::default()
         })
         .await?;
-    todo!()
+    Ok(assistant_obj.id.into())
 }
