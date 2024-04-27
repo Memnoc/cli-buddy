@@ -1,18 +1,17 @@
 // PERF: region:      --- Modules
 
 pub mod asst;
-
+use crate::Result;
 use async_openai::{config::OpenAIConfig, Client};
 
-use crate::Result;
 // PERF: endregion:   --- Modules
 
 // INFO: region: --- Client
 const ENV_OPENAI_API_KEY: &str = "OPENAI_API_KEY";
 
-pub type OpenAiClient = Client<OpenAIConfig>;
+pub type OpenAIClient = Client<OpenAIConfig>;
 
-pub fn new_openai_client() -> Result<OpenAiClient> {
+pub fn new_openai_client() -> Result<OpenAIClient> {
     if std::env::var(ENV_OPENAI_API_KEY).is_ok() {
         Ok(Client::new())
     } else {
