@@ -12,6 +12,12 @@ pub struct CreateConfig {
 #[derive(Debug, From, Deref, Display)]
 pub struct AssistantId(String);
 
+#[derive(Debug, From, Deref, Display)]
+pub struct ThreadId(String);
+
+#[derive(Debug, From, Deref, Display)]
+pub struct FileId(String);
+
 // PERF: endregion ---Types
 
 pub async fn create(open_ai_client: &OpenAiClient, config: CreateConfig) -> Result<AssistantId> {
