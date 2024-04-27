@@ -1,10 +1,12 @@
-// region: -- Modules
+// PERF: region:      --- Modules
 
+mod ais;
+mod buddy;
 mod error;
 
 pub use self::error::{Error, Result};
+// PERF: endregion:   --- Modules
 
-// endregion: -- Modules
 fn main() {
     println!("== CLI Buddy ==");
 }
