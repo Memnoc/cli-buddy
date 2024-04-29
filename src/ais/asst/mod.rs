@@ -5,6 +5,12 @@ use async_openai::types::AssistantToolsRetrieval;
 use async_openai::types::CreateAssistantRequest;
 use derive_more::{Deref, Display, From};
 
+// NOTE: region:    --- Constants
+
+const DEFAULT_QUERY: &[(&str, &str)] = &[("limit", "100")];
+
+// NOTE: region:    --- Constants
+
 // PERF: region    ---Types
 
 pub struct CreateConfig {
@@ -41,11 +47,18 @@ pub async fn create(
 	Ok(assistant_obj.id.into())
 }
 
+// search assisstants by name
 pub async fn first_by_name(
 	open_ai_client: &OpenAIClient,
 	name: &str,
 ) -> Result<Option<AssistantObject>> {
-	todo!()
+	let openai_assistant = open_ai_client.assistants(); // init assistant
+	let assistant = openai_assistant.list(DEFAULT_QUERY).await?.data; // returns a list of assistants
+	let assistant_object = assistant // iterate and compare the names
+		.into_iter()
+		.find(|a| a.name.as_ref().map(|n| n == name).unwrap_or(false));
+
+	Ok(assistant_object)
 }
 
 // NOTE: endregion:    ---Assistant CRUD
