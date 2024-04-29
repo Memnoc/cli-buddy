@@ -7,8 +7,8 @@ use derive_more::{Deref, Display, From};
 // PERF: region    ---Types
 
 pub struct CreateConfig {
-    name: String,
-    model: String,
+    pub name: String,
+    pub model: String,
 }
 
 #[derive(Debug, From, Deref, Display)]
@@ -26,6 +26,7 @@ pub async fn create(open_ai_client: &OpenAIClient, config: CreateConfig) -> Resu
 
     let assistant_obj = openai_assistant
         .create(CreateAssistantRequest {
+            // returning an assistan object
             model: config.model,
             name: Some(config.name),
             tools: Some(vec![AssistantToolsRetrieval::default().into()]),
