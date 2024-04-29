@@ -1,5 +1,6 @@
 use crate::ais::OpenAIClient;
 use crate::Result;
+use async_openai::config;
 use async_openai::types::AssistantObject;
 use async_openai::types::AssistantToolsRetrieval;
 use async_openai::types::CreateAssistantRequest;
@@ -47,6 +48,30 @@ pub async fn create(
 	Ok(assistant_obj.id.into())
 }
 
+pub async fn load_or_create(
+	open_ai_client: &OpenAIClient,
+	config: CreateConfig,
+	recreate: bool,
+) -> Result<AssistantId> {
+	let assistant_object = first_by_name(open_ai_client, &config.name).await?;
+	let mut assistant_id = assistant_object.map(|o| AssistantId::from(o.id));
+	// -- Delete assistant if recreate true and assistant id
+	if let (true, Some(assistant_id_ref)) = (recreate, assistant_id.as_ref()) {
+		delete(open_ai_client, assistant_id_ref).await?;
+		assistant_id.take();
+		println!("Assistant {} deleted", config.name);
+	}
+	// -- Create if needed
+	if let Some(assistant_id) = assistant_id {
+		println!("Assistant {} laoded", config.name);
+		Ok(assistant_id)
+	} else {
+		let assistant_name = config.name.clone();
+		let assistant_id = create(open_ai_client, config).await?;
+		Ok(assistant_id)
+	}
+}
+
 // search assisstants by name
 pub async fn first_by_name(
 	open_ai_client: &OpenAIClient,
@@ -59,6 +84,20 @@ pub async fn first_by_name(
 		.find(|a| a.name.as_ref().map(|n| n == name).unwrap_or(false));
 
 	Ok(assistant_object)
+}
+
+pub async fn delete(
+	open_ai_client: &OpenAIClient,
+	assistant_id: &AssistantId,
+) -> Result<()> {
+	let opeanai_assistant = open_ai_client.assistants();
+
+	// TODO: delete files
+
+	// -- Delete assistant
+	opeanai_assistant.delete(assistant_id).await?;
+
+	Ok(())
 }
 
 // NOTE: endregion:    ---Assistant CRUD
