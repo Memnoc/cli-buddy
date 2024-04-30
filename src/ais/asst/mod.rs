@@ -4,6 +4,7 @@ use async_openai::config;
 use async_openai::types::AssistantObject;
 use async_openai::types::AssistantToolsRetrieval;
 use async_openai::types::CreateAssistantRequest;
+use async_openai::types::ModifyAssistantRequest;
 use derive_more::{Deref, Display, From};
 
 // NOTE: region:    --- Constants
@@ -84,6 +85,21 @@ pub async fn first_by_name(
 		.find(|a| a.name.as_ref().map(|n| n == name).unwrap_or(false));
 
 	Ok(assistant_object)
+}
+
+pub async fn upload_instructions(
+	open_ai_client: &OpenAIClient,
+	assistant_id: &AssistantId,
+	instruction_content: String,
+) -> Result<()> {
+	let opeanai_assistant = open_ai_client.assistants();
+	let modify = ModifyAssistantRequest {
+		instructions: Some(instruction_content),
+		..Default::default()
+	};
+	opeanai_assistant.update(assistant_id, modify).await?;
+
+	Ok(())
 }
 
 pub async fn delete(
