@@ -4,7 +4,9 @@ use async_openai::config;
 use async_openai::types::AssistantObject;
 use async_openai::types::AssistantToolsRetrieval;
 use async_openai::types::CreateAssistantRequest;
+use async_openai::types::CreateThreadRequest;
 use async_openai::types::ModifyAssistantRequest;
+use async_openai::types::ThreadObject;
 use derive_more::{Deref, Display, From};
 
 // NOTE: region:    --- Constants
@@ -117,3 +119,29 @@ pub async fn delete(
 }
 
 // NOTE: endregion:    ---Assistant CRUD
+
+// NOTE: region:    --- Thread
+
+pub async fn create_thread(open_ai_client: &OpenAIClient) -> Result<ThreadId> {
+	let openai_threads = open_ai_client.threads();
+
+	let response = openai_threads
+		.create(CreateThreadRequest {
+			..Default::default()
+		})
+		.await?;
+	Ok(response.id.into())
+}
+
+pub async fn get_thread(
+	open_ai_client: &OpenAIClient,
+	thread_id: &ThreadId,
+) -> Result<ThreadObject> {
+	let openai_threads = open_ai_client.threads();
+
+	let thread_object = openai_threads.retrieve(thread_id).await?;
+
+	Ok(thread_object)
+}
+
+// NOTE: endregion:    --- Thread
