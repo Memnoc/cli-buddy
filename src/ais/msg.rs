@@ -1,4 +1,4 @@
-use async_openai::types::{CreateMessageRequest, MessageObject};
+use async_openai::types::{CreateMessageRequest, MessageContent, MessageObject};
 
 use crate::Result;
 
@@ -22,7 +22,16 @@ pub fn get_text_content(msg: MessageObject) -> Result<String> {
 		.into_iter()
 		.next()
 		.ok_or_else(|| "No message content found".to_string())?;
-	todo!()
+
+	// -- Get the text
+	let txt = match msg_content {
+		MessageContent::Text(text) => text.text.value,
+		MessageContent::ImageFile(_) => {
+			return Err("Message image not supported yet".into())
+		}
+	};
+
+	Ok(txt)
 }
 
 //PERF: endregion: --- Content Extractor
