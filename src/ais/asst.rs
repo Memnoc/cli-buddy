@@ -144,4 +144,14 @@ pub async fn get_thread(
 	Ok(thread_object)
 }
 
+pub async fn run_thread_msg(
+	open_ai_client: &OpenAIClient,
+	assistant_id: &AssistantId,
+	thread_id: &ThreadId,
+	msg: &str,
+) -> Result<String> {
+	// let msg = msg::user_msg(msg)
+	todo!()
+}
+
 // NOTE: endregion:    --- Thread
