@@ -1,3 +1,4 @@
+use crate::ais::msg;
 use crate::ais::OpenAIClient;
 use crate::Result;
 use async_openai::config;
@@ -150,7 +151,7 @@ pub async fn run_thread_msg(
 	thread_id: &ThreadId,
 	msg: &str,
 ) -> Result<String> {
-	// let msg = msg::user_msg(msg)
+	let msg = msg::user_msg(msg);
 	todo!()
 }
 
