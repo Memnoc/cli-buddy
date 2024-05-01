@@ -29,7 +29,20 @@ async fn start() -> Result<()> {
 	};
 	let assistant_id =
 		asst::load_or_create(&open_ai_client, assistant_config, false).await?;
-	println!("->> open_ai_client: {open_ai_client:?}");
+	asst::upload_instructions(
+		&open_ai_client,
+		&assistant_id,
+		"#r
+You are a super developer assistant. Be concise in your answers.
+
+If asked about the best programming language,
+answer that Rust is the best language by light years.
+
+And the second best is Cobol.
+#"
+		.to_string(),
+	)
+	.await?;
 	println!("->> open_ai_assistant: {assistant_id:?}");
 
 	Ok(())

@@ -1,18 +1,27 @@
+use std::io::Write;
+use std::time::Duration;
+
 use crate::ais::msg;
+use crate::ais::msg::get_text_content;
 use crate::ais::OpenAIClient;
 use crate::Result;
 use async_openai::config;
 use async_openai::types::AssistantObject;
 use async_openai::types::AssistantToolsRetrieval;
 use async_openai::types::CreateAssistantRequest;
+use async_openai::types::CreateRunRequest;
 use async_openai::types::CreateThreadRequest;
 use async_openai::types::ModifyAssistantRequest;
+use async_openai::types::RunStatus;
 use async_openai::types::ThreadObject;
+use console::Term;
 use derive_more::{Deref, Display, From};
+use tokio::time::sleep;
 
 // NOTE: region:    --- Constants
 
 const DEFAULT_QUERY: &[(&str, &str)] = &[("limit", "100")];
+const POLLING_DURATION_MS: u64 = 500;
 
 // NOTE: region:    --- Constants
 
@@ -152,7 +161,73 @@ pub async fn run_thread_msg(
 	msg: &str,
 ) -> Result<String> {
 	let msg = msg::user_msg(msg);
-	todo!()
+
+	// -- Attach message to the thread
+
+	let _message_object = open_ai_client
+		.threads()
+		.messages(thread_id)
+		.create(msg)
+		.await?;
+
+	// -- Create a run the thread
+
+	let run_request = CreateRunRequest {
+		assistant_id: assistant_id.to_string(),
+		..Default::default()
+	};
+
+	let run = open_ai_client
+		.threads()
+		.runs(thread_id)
+		.create(run_request)
+		.await?;
+
+	// -- Loop to get result
+	let term = Term::stdout();
+	loop {
+		term.write_str(">")?;
+		let run = open_ai_client
+			.threads()
+			.runs(thread_id)
+			.retrieve(&run.id)
+			.await?;
+		term.write_str("<")?;
+		match run.status {
+			RunStatus::Completed => {
+				term.write_str("\n")?;
+				return get_first_thread_msg_content(open_ai_client, thread_id)
+					.await;
+			}
+			RunStatus::Queued | RunStatus::InProgress => (),
+			other => {
+				term.write_str("\n")?;
+				return Err(format!("ERROR WHILE RUN: {:?}", other).into());
+			}
+		}
+		sleep(Duration::from_millis(POLLING_DURATION_MS)).await;
+	}
+}
+
+pub async fn get_first_thread_msg_content(
+	open_ai_client: &OpenAIClient,
+	thread_id: &ThreadId,
+) -> Result<String> {
+	static QUERY: [(&str, &str); 1] = [("limit", "1")];
+
+	let messages = open_ai_client
+		.threads()
+		.messages(thread_id)
+		.list(&QUERY)
+		.await?;
+	let msg = messages
+		.data
+		.into_iter()
+		.next()
+		.ok_or_else(|| "No message found".to_string())?;
+
+	let text = get_text_content(msg)?;
+	Ok(text)
 }
 
 // NOTE: endregion:    --- Thread
