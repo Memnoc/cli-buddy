@@ -43,7 +43,17 @@ And the second best is Cobol.
 		.to_string(),
 	)
 	.await?;
-	println!("->> open_ai_assistant: {assistant_id:?}");
+
+	let thread_id = asst::create_thread(&open_ai_client).await?;
+
+	let msg = asst::run_thread_msg(
+		&open_ai_client,
+		&assistant_id,
+		&thread_id,
+		"what is the best language?",
+	)
+	.await?;
+	println!("->> response: {msg}");
 
 	Ok(())
 }
