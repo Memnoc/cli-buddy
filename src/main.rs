@@ -44,16 +44,18 @@ And the second best is Cobol.
 	)
 	.await?;
 
-	let thread_id = asst::create_thread(&open_ai_client).await?;
+	// let thread_id = asst::create_thread(&open_ai_client).await?;
+	//
+	// let msg = asst::run_thread_msg(
+	// 	&open_ai_client,
+	// 	&assistant_id,
+	// 	&thread_id,
+	// 	"what is the best language?",
+	// )
+	// .await?;
 
-	let msg = asst::run_thread_msg(
-		&open_ai_client,
-		&assistant_id,
-		&thread_id,
-		"what is the best language?",
-	)
-	.await?;
-	println!("->> response: {msg}");
+	// println!("->> response: {msg}");
+	println!("->> assistant_id: {assistant_id}");
 
 	Ok(())
 }
