@@ -25,7 +25,7 @@ async fn start() -> Result<()> {
 	let open_ai_client = new_openai_client()?;
 	let assistant_config = CreateConfig {
 		name: "cli-buddy".to_string(),
-		model: "gpt-4-turbo-preview".to_string(),
+		model: "gpt-3.5-turbo-1106".to_string(),
 	};
 	let assistant_id =
 		asst::load_or_create(&open_ai_client, assistant_config, false).await?;
