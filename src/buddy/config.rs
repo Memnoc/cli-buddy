@@ -1,5 +1,7 @@
 use serde::Deserialize;
 
+use crate::ais::asst;
+
 #[derive(Debug, Deserialize)]
 pub(super) struct Config {
 	pub name: String,
@@ -15,3 +17,16 @@ pub(super) struct FileBundle {
 	pub dst_ext: String,
 	pub src_globs: Vec<String>,
 }
+
+// PERF: region:    --- Froms
+
+impl From<&Config> for asst::CreateConfig {
+	fn from(config: &Config) -> Self {
+		Self {
+			name: config.name.clone(),
+			model: config.model.clone(),
+		}
+	}
+}
+
+// PERF: endregion: --- Froms
