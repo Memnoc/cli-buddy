@@ -16,6 +16,8 @@ use async_openai::types::RunStatus;
 use async_openai::types::ThreadObject;
 use console::Term;
 use derive_more::{Deref, Display, From};
+use serde::Deserialize;
+use serde::Serialize;
 use tokio::time::sleep;
 
 // NOTE: region:    --- Constants
@@ -34,7 +36,8 @@ pub struct CreateConfig {
 
 #[derive(Debug, From, Deref, Display)]
 pub struct AssistantId(String);
-#[derive(Debug, From, Deref, Display)]
+
+#[derive(Debug, From, Deref, Display, Deserialize, Serialize)]
 pub struct ThreadId(String);
 
 #[derive(Debug, From, Deref, Display)]
