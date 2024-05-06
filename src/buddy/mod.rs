@@ -5,6 +5,7 @@ mod config;
 use crate::ais::asst::{self, AssistantId, ThreadId};
 use crate::ais::{new_openai_client, OpenAIClient};
 use crate::buddy::config::Config;
+use crate::utils::files::ensure_dir;
 use crate::Result;
 use derive_more::{Deref, From};
 use serde::{Deserialize, Serialize};
@@ -32,12 +33,12 @@ pub struct Conv {
 impl Buddy {
 	fn data_dir(&self) -> Result<PathBuf> {
 		let data_dir = self.dir.join(".buddy");
-		// FIX: ensure_dir(&data_dir)?;
+		ensure_dir(&data_dir)?;
 		Ok(data_dir)
 	}
 	fn data_files_dir(&self) -> Result<PathBuf> {
 		let dir = self.data_dir()?.join("files");
-		//FIX: ensure_dir(&dir);
+		ensure_dir(&dir);
 		Ok(dir)
 	}
 }
