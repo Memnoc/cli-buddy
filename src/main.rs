@@ -3,6 +3,7 @@
 mod ais;
 mod buddy;
 mod error;
+mod utils;
 
 use crate::ais::asst::{self, CreateConfig};
 use crate::ais::new_openai_client;
