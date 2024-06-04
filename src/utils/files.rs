@@ -4,6 +4,7 @@ use std::{
 };
 
 use globset::{Glob, GlobSet, GlobSetBuilder};
+use walkdir::WalkDir;
 
 use crate::Result;
 
@@ -32,10 +33,36 @@ pub fn list_files(
 		.map(|v| if v { 100 } else { 1 })
 		.unwrap_or(1);
 
+	// --- Prep globs
 	let include_globs = include_globs.map(get_glob_set).transpose()?;
 	let exclude_globs = exclude_globs.map(get_glob_set).transpose()?;
 
-	todo!()
+	// --- Build files iterator
+	let walk_dir_iterator = WalkDir::new(dir)
+		.max_depth(depth)
+		.into_iter()
+		.filter_entry(|e| {
+			if e.file_type().is_dir() {
+				!base_dir_exclude.is_match(e.path())
+			}
+			// else file, we apply the globs
+			else {
+				if let Some(exclude_globs) = exclude_globs.as_ref() {
+					if exclude_globs.is_match(e.path()) {
+						return false;
+					}
+				}
+				match include_globs.as_ref() {
+					Some(globs) => globs.is_match(e.path()),
+					None => true,
+				}
+			}
+		})
+		.filter_map(|e| e.ok().filter(|e| e.file_type().is_file()));
+
+	let paths = walk_dir_iterator.map(|e| e.into_path());
+
+	Ok(paths.collect())
 }
 
 fn base_dir_exclude_globs() -> Result<GlobSet> {
