@@ -107,12 +107,12 @@ pub async fn upload_instructions(
 	assistant_id: &AssistantId,
 	instruction_content: String,
 ) -> Result<()> {
-	let opeanai_assistant = open_ai_client.assistants();
+	let openai_assistant = open_ai_client.assistants();
 	let modify = ModifyAssistantRequest {
 		instructions: Some(instruction_content),
 		..Default::default()
 	};
-	opeanai_assistant.update(assistant_id, modify).await?;
+	openai_assistant.update(assistant_id, modify).await?;
 
 	Ok(())
 }

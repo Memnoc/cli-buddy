@@ -1,12 +1,43 @@
-use std::{
-	fs,
-	path::{Path, PathBuf},
-};
-
+use crate::Result;
 use globset::{Glob, GlobSet, GlobSetBuilder};
+use std::fs::{self, File};
+use std::io::{BufRead as _, BufReader, BufWriter, Write};
+use std::path::{Path, PathBuf};
 use walkdir::WalkDir;
 
-use crate::Result;
+// PERF: region:        --- File Parser/Writer
+
+pub fn load_from_toml<T>(file: impl AsRef<Path>) -> Result<T>
+where
+	T: serde::de::DeserializeOwned,
+{
+	let content = read_to_string(file.as_ref())?;
+
+	Ok(toml::from_str(&content)?)
+}
+
+pub fn load_from_json<T>(file: impl AsRef<Path>) -> Result<T>
+where
+	T: serde::de::DeserializeOwned,
+{
+	let val = serde_json::from_reader(get_reader(file.as_ref())?)?;
+	Ok(val)
+}
+
+pub fn save_to_json<T>(file: impl AsRef<Path>, data: &T) -> Result<()>
+where
+	T: serde::Serialize,
+{
+	let file = file.as_ref();
+
+	let file = File::create(file)
+		.map_err(|e| format!("Cannot create file '{:?}': {}", file, e))?;
+	serde_json::to_writer_pretty(file, data)?;
+
+	Ok(())
+}
+
+// PERF: end region:    --- File Parser/Writer
 
 // PERF: region:    --- Dir Utils
 
@@ -80,5 +111,22 @@ pub fn get_glob_set(globs: &[&str]) -> Result<GlobSet> {
 // PERF: endregion: --- Dir Utils
 
 // PERF: region:    --- File Utils
+
+fn read_to_string(file: &Path) -> Result<String> {
+	if !file.is_file() {
+		return Err(format!("File not found: {}", file.display()).into());
+	}
+	let content = fs::read_to_string(file)?;
+
+	Ok(content)
+}
+
+fn get_reader(file: &Path) -> Result<BufReader<File>> {
+	let Ok(file) = File::open(file) else {
+		return Err(format!("File not found: {}", file.display()).into());
+	};
+
+	Ok(BufReader::new(file))
+}
 
 // PERF: endregion: --- File Utils
